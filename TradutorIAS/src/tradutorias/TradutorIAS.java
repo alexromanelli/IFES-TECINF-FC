@@ -160,8 +160,8 @@ public class TradutorIAS {
     private static ArrayList<Instrucao> instrucoes;
     private static int contagemVariaveisTemporarias = 0;
     private static int contagemRotulosSaltos = 0;
-    private static boolean haDefinirSalto = false;
-    private static Simbolo saltoIndefinido = null;
+    private static boolean haSaltoIndefinido = false;
+    private static ArrayList<Simbolo> saltosIndefinidos = new ArrayList<>();
     
     /**
      * Para testar o programa com o exercício proposto, este método insere
@@ -183,17 +183,32 @@ public class TradutorIAS {
      * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException {
-        tabelaSimbolos = new ArrayList<>();
-        instrucoes = new ArrayList<>();
-        
-        // para testes com exercícios
-        preparaTabelaSimbolos();
-        
-        BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-        
-        // ler e traduzir os comandos
+        if (args.length > 0 && args[0].equals("no-gui")) {
+            tabelaSimbolos = new ArrayList<>();
+            instrucoes = new ArrayList<>();
+
+            // para testes com exercícios
+            preparaTabelaSimbolos();
+
+            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+
+            // ler e traduzir os comandos
+            processarComandos(input);
+
+            // adicionar instruçao STOP
+            adicionarInstrucao(instrucoes, new Instrucao(OpCode.getOpCode("STOP")));
+
+            // gerar codigo
+            gerarCodigo();
+        }
+    }
+    
+    private static String processarComandos(BufferedReader input) throws IOException {
         String linha;
-        while ((linha = input.readLine()) != null && !linha.equals("FIM.")) {
+        while ((linha = input.readLine()) != null && 
+                !(linha.trim().length() >= 3 && linha.trim().substring(0, 3).equals("FIM")) &&
+                !linha.trim().equals("SENAO")) {
+            linha = linha.trim();
             // decodificar o comando
             String[] tokens = linha.split(" ");
             if (tokens.length < 3)
@@ -207,27 +222,15 @@ public class TradutorIAS {
                 processarAtribuicao(tokens);
             }
         }
-        
-        // adicionar instruçao STOP
-        adicionarInstrucao(instrucoes, new Instrucao(OpCode.getOpCode("STOP")));
-        
-        // gerar codigo
-        gerarCodigo();
+        return linha;
     }
     
-    private static void processarAtribuicao(String[] tokens) {
-        // verificar se variável está na tabela de símbolos
-        Simbolo simboloVariavelLadoEsquerdo = procurarItemTabelaSimbolos(tokens[0]);
-        if (simboloVariavelLadoEsquerdo == null) {
-            // se não está na tabela, incluir
-            simboloVariavelLadoEsquerdo = new Simbolo(tokens[0], TipoSimbolo.Variavel);
-            tabelaSimbolos.add(simboloVariavelLadoEsquerdo);
-        }
-
-        // interpretar expressão do lado direito da atribuição (assumir totalmente parentetizada)
+    private static Simbolo processarExpressao(String[] tokens, 
+            int limiteInicial, int limiteFinal) {
+        // interpretar expressão (assumir totalmente parentetizada)
         Stack<Simbolo> pilhaOperandos = new Stack();
         Stack<Operador> pilhaOperadores = new Stack();
-        for (int i = 2; i < tokens.length; i++) {
+        for (int i = limiteInicial; i < limiteFinal; i++) {
             Simbolo simboloToken;
             if (tokenNumerica(tokens[i])) { // é literal numérica
                 simboloToken = procurarItemTabelaSimbolos(tokens[i]);
@@ -499,8 +502,8 @@ public class TradutorIAS {
                         adicionarInstrucao(instrucoes, ins3);
                         adicionarInstrucao(instrucoes, ins4);
                         // deixar rotuloF como indefinido e pendente para a próxima instrução adicionada
-                        haDefinirSalto = true;
-                        saltoIndefinido = rotuloF;
+                        haSaltoIndefinido = true;
+                        saltosIndefinidos.add(rotuloF);
                         break;
                         
                     case DisjuncaoLogica:
@@ -518,8 +521,8 @@ public class TradutorIAS {
                         adicionarInstrucao(instrucoes, ins2);
                         adicionarInstrucao(instrucoes, ins3);
                         // deixar rotuloF como indefinido e pendente para a próxima instrução adicionada
-                        haDefinirSalto = true;
-                        saltoIndefinido = rotuloF;
+                        haSaltoIndefinido = true;
+                        saltosIndefinidos.add(rotuloF);
                         break;
                         
                     case NegacaoLogica:
@@ -548,11 +551,26 @@ public class TradutorIAS {
             }
         }
         
-        // desempilhar variavel temporaria, que tera o resultado da expressao do lado direito da atribuicao
-        Simbolo temporaria = pilhaOperandos.pop();
+        // desempilhar variável que terá o resultado da expressão do lado direito da atribuição
+        Simbolo resultadoExpressao = pilhaOperandos.pop();
+        
+        return resultadoExpressao;
+    }
+    
+    private static void processarAtribuicao(String[] tokens) {
+        // verificar se variável está na tabela de símbolos
+        Simbolo simboloVariavelLadoEsquerdo = procurarItemTabelaSimbolos(tokens[0]);
+        if (simboloVariavelLadoEsquerdo == null) {
+            // se não está na tabela, incluir
+            simboloVariavelLadoEsquerdo = new Simbolo(tokens[0], TipoSimbolo.Variavel);
+            tabelaSimbolos.add(simboloVariavelLadoEsquerdo);
+        }
+
+        // interpretar expressão do lado direito da atribuição (assumir totalmente parentetizada)
+        Simbolo resultadoExpressao = processarExpressao(tokens, 2, tokens.length);
         
         // adicionar instruçoes para atribuiçao
-        Instrucao ins1 = new Instrucao(OpCode.getOpCode("LOAD M(X)"), temporaria);
+        Instrucao ins1 = new Instrucao(OpCode.getOpCode("LOAD M(X)"), resultadoExpressao);
         Instrucao ins2 = new Instrucao(OpCode.getOpCode("STOR M(X)"), simboloVariavelLadoEsquerdo);
         adicionarInstrucao(instrucoes, ins1);
         adicionarInstrucao(instrucoes, ins2);
@@ -560,9 +578,11 @@ public class TradutorIAS {
     
     private static void adicionarInstrucao(ArrayList<Instrucao> instrucoes, Instrucao instrucao) {
         instrucoes.add(instrucao);
-        if (haDefinirSalto) {
-            saltoIndefinido.destinoSalto = instrucao;
-            haDefinirSalto = false;
+        if (haSaltoIndefinido) {
+            for (Simbolo saltoIndefinido : saltosIndefinidos)
+                saltoIndefinido.destinoSalto = instrucao;
+            saltosIndefinidos.clear();
+            haSaltoIndefinido = false;
         }
     }
     
@@ -586,8 +606,43 @@ public class TradutorIAS {
         return simboloToken;
     }
 
-    private static void processarSe(String[] tokens, BufferedReader input) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private static void processarSe(String[] tokens, BufferedReader input) throws IOException {
+        // processar expressão condicional
+        Simbolo resultadoExpressao = processarExpressao(tokens, 1, tokens.length - 1);
+
+        // LOAD M(X) resultadoExpressao
+        Instrucao ins1 = new Instrucao(OpCode.getOpCode("LOAD M(X)"), resultadoExpressao);
+        instrucoes.add(ins1);
+        // JUMP+ M(X,...) SE
+        Simbolo rotuloSe = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
+        Instrucao ins2 = new Instrucao(OpCode.getOpCode("JUMP+ M(X,...)"), rotuloSe);
+        instrucoes.add(ins2);
+        // JUMP M(X,...) SENAO
+        Simbolo rotuloSenao = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
+        Instrucao ins3 = new Instrucao(OpCode.getOpCode("JUMP M(X,...)"), rotuloSenao);
+        instrucoes.add(ins3);
+        // SE: <comandos>
+        // prepara para ajustar rótulo SE para a próxima instrução adicionada
+        haSaltoIndefinido = true;
+        saltosIndefinidos.add(rotuloSe);
+        // processar comandos SE:
+        String delimitadorSe = processarComandos(input);
+        
+        // JUMP M(X,...) FIM
+        Simbolo rotuloFim = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
+        Instrucao ins4 = new Instrucao(OpCode.getOpCode("JUMP M(X,...)"), rotuloFim);
+        instrucoes.add(ins4);
+        // SENAO: <comandos>
+        // prepara para ajustar rótulo SENAO para a próxima instrução adicionada
+        haSaltoIndefinido = true;
+        saltosIndefinidos.add(rotuloSenao);
+        // processar comandos SENAO
+        processarComandos(input);
+        
+        // FIM:
+        // prepara para ajustar rótulo FIM para a próxima instrução adicionada
+        haSaltoIndefinido = true;
+        saltosIndefinidos.add(rotuloFim);
     }
 
     private static void processarEnquanto(String[] tokens, BufferedReader input) {
