@@ -164,6 +164,21 @@ public class TradutorIAS {
     private static Simbolo saltoIndefinido = null;
     
     /**
+     * Para testar o programa com o exercício proposto, este método insere
+     * símbolos pré-definidos na tabela.
+     */
+    private static void preparaTabelaSimbolos() {
+        tabelaSimbolos.add(new Simbolo("A", TipoSimbolo.Variavel));
+        tabelaSimbolos.add(new Simbolo("B", TipoSimbolo.Variavel));
+        tabelaSimbolos.add(new Simbolo("C", TipoSimbolo.Variavel));
+        tabelaSimbolos.add(new Simbolo("D", TipoSimbolo.Variavel));
+        tabelaSimbolos.add(new Simbolo("C1", TipoSimbolo.Constante, -1));
+        tabelaSimbolos.add(new Simbolo("C2", TipoSimbolo.Constante, 2));
+        tabelaSimbolos.add(new Simbolo("C3", TipoSimbolo.Constante, 5));
+        tabelaSimbolos.add(new Simbolo("C4", TipoSimbolo.Constante, 17));
+    }
+    
+    /**
      * @param args the command line arguments
      * @throws java.io.IOException
      */
@@ -171,11 +186,14 @@ public class TradutorIAS {
         tabelaSimbolos = new ArrayList<>();
         instrucoes = new ArrayList<>();
         
+        // para testes com exercícios
+        preparaTabelaSimbolos();
+        
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         
         // ler e traduzir os comandos
         String linha;
-        while ((linha = input.readLine()) != null) {
+        while ((linha = input.readLine()) != null && !linha.equals("FIM.")) {
             // decodificar o comando
             String[] tokens = linha.split(" ");
             if (tokens.length < 3)
@@ -626,7 +644,7 @@ public class TradutorIAS {
         }
         
         // adicionar codigo ".empty", se instruçao STOP for do lado esquerdo
-        if (instrucoes.size() / 2 == 1) {
+        if (instrucoes.size() % 2 == 1) {
             System.out.println(".empty");
             codigoInstrucoes.add(".empty");
             parametrosInstrucoes.add(0);
@@ -640,7 +658,7 @@ public class TradutorIAS {
         System.out.println("\nCodigo do programa com instruçoes da linguagem original:\n");
         
         for (int i = 0; i < codigoInstrucoes.size(); i++) {
-            if (instrucoes.get(i).parametro != null) {
+            if (!codigoInstrucoes.get(i).equals(".empty") && instrucoes.get(i).parametro != null) {
                 String cod = codigoInstrucoes.get(i) + " " + parametrosInstrucoes.get(i);
                 System.out.println(cod);
             } else {
@@ -654,9 +672,14 @@ public class TradutorIAS {
         
         System.out.println("\nCodigo do programa em linguagem de maquina (hexadecimal):\n");
         for (int i = 0; i < parametrosInstrucoes.size(); i++) {
-            String op = Integer.toHexString(instrucoes.get(i).opcode);
-            if (op.length() == 1)
-                op = "0" + op;
+            String op = "";
+            if (codigoInstrucoes.get(i).equals(".empty")) {
+                op = "00";
+            } else {
+                op = Integer.toHexString(instrucoes.get(i).opcode);
+                if (op.length() == 1)
+                    op = "0" + op;
+            }
             String par = Integer.toHexString(parametrosInstrucoes.get(i));
             while (par.length() < 3)
                 par = "0" + par;
@@ -668,6 +691,8 @@ public class TradutorIAS {
         }
         for (Simbolo simb : tabelaSimbolos) {
             String palavra = Long.toHexString(simb.valor);
+            if (palavra.length() > 10)
+                palavra = palavra.substring(0, 10);
             while (palavra.length() < 10)
                 palavra = "0" + palavra;
             System.out.println(palavra);

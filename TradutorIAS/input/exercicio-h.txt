@@ -1,0 +1,8 @@
+A <- ( C2 * C3 )
+B <- ( C4 / C3 )
+C <- ( ( A + B ) % ( C4 - A ) )
+SE ( C > B ) ENTAO
+­  D <- C
+SENAO
+  D <- B
+FIM

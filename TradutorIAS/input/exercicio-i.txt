@@ -1,0 +1,10 @@
+A <- C2
+B <- C1
+C <- C3
+D <- ( ( ( C2 * B ) * C ) + C4 )
+SE ( NAO ( ( D > ( 4 * C4 ) ) OU ( A > D ) ) ) ENTAO
+  B <- D
+  D <- C1
+SENAO
+  B <- C1
+FIM
