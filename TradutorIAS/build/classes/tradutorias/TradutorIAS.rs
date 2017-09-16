@@ -1,6 +1,0 @@
-tradutorias.OpCode
-tradutorias.TradutorIAS
-tradutorias.Instrucao
-tradutorias.Operador
-tradutorias.TipoSimbolo
-tradutorias.Simbolo

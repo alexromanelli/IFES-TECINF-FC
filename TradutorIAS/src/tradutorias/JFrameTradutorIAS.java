@@ -3,6 +3,18 @@
  */
 package tradutorias;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+
 /**
  *
  * @author Alexandre Romanelli <alexandre.romanelli@ifes.edu.br>
@@ -28,35 +40,50 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        jButtonAbrir = new javax.swing.JButton();
+        jButtonSalvarCodigoFonte = new javax.swing.JButton();
+        jButtonTraduzir = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jTextAreaCodigoFonte = new javax.swing.JTextArea();
         jPanel3 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
-        jButton4 = new javax.swing.JButton();
+        jButtonSalvarCodigoIasModificado = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea2 = new javax.swing.JTextArea();
+        jTextAreaCodigoIasModificado = new javax.swing.JTextArea();
         jPanel4 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
-        jButton5 = new javax.swing.JButton();
+        jButtonSalvarCodigoIasOriginal = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTextArea3 = new javax.swing.JTextArea();
+        jTextAreaCodigoIasOriginal = new javax.swing.JTextArea();
         jPanel5 = new javax.swing.JPanel();
         jPanel8 = new javax.swing.JPanel();
-        jButton6 = new javax.swing.JButton();
+        jButtonSalvarCodigoIasHexadecimal = new javax.swing.JButton();
         jScrollPane4 = new javax.swing.JScrollPane();
-        jTextArea4 = new javax.swing.JTextArea();
+        jTextAreaCodigoIasHexadecimal = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Tradutor de linguagem de alto nível para IAS");
 
-        jButton1.setText("Abrir...");
+        jButtonAbrir.setText("Abrir...");
+        jButtonAbrir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonAbrirActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Salvar...");
+        jButtonSalvarCodigoFonte.setText("Salvar...");
+        jButtonSalvarCodigoFonte.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSalvarCodigoFonteActionPerformed(evt);
+            }
+        });
 
-        jButton3.setText("Traduzir");
+        jButtonTraduzir.setText("Traduzir");
+        jButtonTraduzir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonTraduzirActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
@@ -64,11 +91,11 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButtonAbrir, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButtonSalvarCodigoFonte, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(40, 40, 40)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButtonTraduzir, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(443, Short.MAX_VALUE))
         );
         jPanel6Layout.setVerticalGroup(
@@ -76,16 +103,16 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3))
+                    .addComponent(jButtonAbrir)
+                    .addComponent(jButtonSalvarCodigoFonte)
+                    .addComponent(jButtonTraduzir))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 15)); // NOI18N
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        jTextAreaCodigoFonte.setColumns(20);
+        jTextAreaCodigoFonte.setFont(new java.awt.Font("Monospaced", 0, 15)); // NOI18N
+        jTextAreaCodigoFonte.setRows(5);
+        jScrollPane1.setViewportView(jTextAreaCodigoFonte);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -110,7 +137,7 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Código-fonte", jPanel2);
 
-        jButton4.setText("Salvar...");
+        jButtonSalvarCodigoIasModificado.setText("Salvar...");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -118,21 +145,22 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButtonSalvarCodigoIasModificado, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton4)
+                .addComponent(jButtonSalvarCodigoIasModificado)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTextArea2.setColumns(20);
-        jTextArea2.setFont(new java.awt.Font("Monospaced", 0, 15)); // NOI18N
-        jTextArea2.setRows(5);
-        jScrollPane2.setViewportView(jTextArea2);
+        jTextAreaCodigoIasModificado.setEditable(false);
+        jTextAreaCodigoIasModificado.setColumns(20);
+        jTextAreaCodigoIasModificado.setFont(new java.awt.Font("Monospaced", 0, 15)); // NOI18N
+        jTextAreaCodigoIasModificado.setRows(5);
+        jScrollPane2.setViewportView(jTextAreaCodigoIasModificado);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -157,7 +185,7 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Código IAS - modificado", jPanel3);
 
-        jButton5.setText("Salvar...");
+        jButtonSalvarCodigoIasOriginal.setText("Salvar...");
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -165,21 +193,22 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButtonSalvarCodigoIasOriginal, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton5)
+                .addComponent(jButtonSalvarCodigoIasOriginal)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTextArea3.setColumns(20);
-        jTextArea3.setFont(new java.awt.Font("Monospaced", 0, 15)); // NOI18N
-        jTextArea3.setRows(5);
-        jScrollPane3.setViewportView(jTextArea3);
+        jTextAreaCodigoIasOriginal.setEditable(false);
+        jTextAreaCodigoIasOriginal.setColumns(20);
+        jTextAreaCodigoIasOriginal.setFont(new java.awt.Font("Monospaced", 0, 15)); // NOI18N
+        jTextAreaCodigoIasOriginal.setRows(5);
+        jScrollPane3.setViewportView(jTextAreaCodigoIasOriginal);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -204,7 +233,7 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Código IAS - original", jPanel4);
 
-        jButton6.setText("Salvar...");
+        jButtonSalvarCodigoIasHexadecimal.setText("Salvar...");
 
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
@@ -212,21 +241,22 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButtonSalvarCodigoIasHexadecimal, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton6)
+                .addComponent(jButtonSalvarCodigoIasHexadecimal)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTextArea4.setColumns(20);
-        jTextArea4.setFont(new java.awt.Font("Monospaced", 0, 15)); // NOI18N
-        jTextArea4.setRows(5);
-        jScrollPane4.setViewportView(jTextArea4);
+        jTextAreaCodigoIasHexadecimal.setEditable(false);
+        jTextAreaCodigoIasHexadecimal.setColumns(20);
+        jTextAreaCodigoIasHexadecimal.setFont(new java.awt.Font("Monospaced", 0, 15)); // NOI18N
+        jTextAreaCodigoIasHexadecimal.setRows(5);
+        jScrollPane4.setViewportView(jTextAreaCodigoIasHexadecimal);
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -272,48 +302,114 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
+    private void jButtonAbrirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAbrirActionPerformed
+        JFileChooser jFileChooser = new JFileChooser();
+        File diretorioAtual = new File(System.getProperty("user.dir"));
+        jFileChooser.setCurrentDirectory(diretorioAtual);
+        
+        int resultado = jFileChooser.showOpenDialog(this);
+        if (resultado == JFileChooser.APPROVE_OPTION) {
+            BufferedReader input = null;
+            try {
+                File f = jFileChooser.getSelectedFile();
+                input = new BufferedReader(new FileReader(f));
+                
+                jTextAreaCodigoFonte.setText("");
+                String linha;
+                boolean novaLinha = false;
+                while ((linha = input.readLine()) != null) {
+                    if (novaLinha) {
+                        jTextAreaCodigoFonte.append("\n");
+                    }
+                    jTextAreaCodigoFonte.append(linha);
+                    novaLinha = true;
+                }
+            } catch (FileNotFoundException ex) {
+                JOptionPane.showMessageDialog(null, "Erro: arquivo não encontrado ou não pode ser aberto.", "ERRO", JOptionPane.ERROR_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Erro de leitura do arquivo.", "ERRO", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                try {
+                    input.close();
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao fechar o arquivo.", "ERRO", JOptionPane.ERROR_MESSAGE);
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(JFrameTradutorIAS.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(JFrameTradutorIAS.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(JFrameTradutorIAS.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(JFrameTradutorIAS.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
+    }//GEN-LAST:event_jButtonAbrirActionPerformed
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new JFrameTradutorIAS().setVisible(true);
+    private void jButtonSalvarCodigoFonteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSalvarCodigoFonteActionPerformed
+        JFileChooser jFileChooser = new JFileChooser();
+        File diretorioAtual = new File(System.getProperty("user.dir"));
+        jFileChooser.setCurrentDirectory(diretorioAtual);
+
+        int resultado = jFileChooser.showSaveDialog(this);
+        if (resultado == JFileChooser.APPROVE_OPTION) {
+            BufferedWriter output = null;
+            try {
+                File f = jFileChooser.getSelectedFile();
+                output = new BufferedWriter(new FileWriter(f));
+                
+                String codigoFonte = jTextAreaCodigoFonte.getText();
+                output.write(codigoFonte);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Erro de escrita do arquivo.", "ERRO", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                try {
+                    output.close();
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao fechar o arquivo.", "ERRO", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        });
-    }
+        }
+    }//GEN-LAST:event_jButtonSalvarCodigoFonteActionPerformed
+
+    private void jButtonTraduzirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonTraduzirActionPerformed
+        ArrayList<ArrayList<String>> codigos = TradutorIAS.traduzirCodigoFonte();
+        
+        jTextAreaCodigoIasModificado.setText("");
+        boolean novaLinha = false;
+        for (String s : codigos.get(0)) {
+            if (novaLinha) {
+                jTextAreaCodigoIasModificado.append("\n");
+            }
+            jTextAreaCodigoIasModificado.append(s);
+            novaLinha = true;
+        }
+        jTextAreaCodigoIasModificado.getCaret().setDot(0);
+        
+        jTextAreaCodigoIasOriginal.setText("");
+        novaLinha = false;
+        for (String s : codigos.get(1)) {
+            if (novaLinha) {
+                jTextAreaCodigoIasOriginal.append("\n");
+            }
+            jTextAreaCodigoIasOriginal.append(s);
+            novaLinha = true;
+        }
+        jTextAreaCodigoIasOriginal.getCaret().setDot(0);
+        
+        jTextAreaCodigoIasHexadecimal.setText("");
+        novaLinha = false;
+        for (String s : codigos.get(2)) {
+            if (novaLinha) {
+                jTextAreaCodigoIasHexadecimal.append("\n");
+            }
+            jTextAreaCodigoIasHexadecimal.append(s);
+            novaLinha = true;
+        }
+        jTextAreaCodigoIasHexadecimal.getCaret().setDot(0);
+        
+        JOptionPane.showMessageDialog(null, "Tradução concluída!", "Processamento", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jButtonTraduzirActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
+    private javax.swing.JButton jButtonAbrir;
+    private javax.swing.JButton jButtonSalvarCodigoFonte;
+    private javax.swing.JButton jButtonSalvarCodigoIasHexadecimal;
+    private javax.swing.JButton jButtonSalvarCodigoIasModificado;
+    private javax.swing.JButton jButtonSalvarCodigoIasOriginal;
+    private javax.swing.JButton jButtonTraduzir;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -327,9 +423,13 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextArea jTextArea2;
-    private javax.swing.JTextArea jTextArea3;
-    private javax.swing.JTextArea jTextArea4;
+    private javax.swing.JTextArea jTextAreaCodigoFonte;
+    private javax.swing.JTextArea jTextAreaCodigoIasHexadecimal;
+    private javax.swing.JTextArea jTextAreaCodigoIasModificado;
+    private javax.swing.JTextArea jTextAreaCodigoIasOriginal;
     // End of variables declaration//GEN-END:variables
+
+    JTextArea getTextAreaCodigoFonte() {
+        return jTextAreaCodigoFonte;
+    }
 }

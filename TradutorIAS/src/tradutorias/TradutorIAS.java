@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JTextArea;
 
 class Instrucao {
     public int opcode;
@@ -162,6 +165,12 @@ public class TradutorIAS {
     private static int contagemRotulosSaltos = 0;
     private static boolean haSaltoIndefinido = false;
     private static ArrayList<Simbolo> saltosIndefinidos = new ArrayList<>();
+    private static BufferedReader input;
+    
+    private static boolean usarInterfaceGrafica;
+    private static int indiceUltimaLinhaLida;
+    private static String[] linhas;
+    private static JTextArea jTextAreaCodigoFonte;
     
     /**
      * Para testar o programa com o exercício proposto, este método insere
@@ -183,29 +192,88 @@ public class TradutorIAS {
      * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException {
+        tabelaSimbolos = new ArrayList<>();
+        instrucoes = new ArrayList<>();
+
+        // para testes com exercícios
+        preparaTabelaSimbolos();
+
         if (args.length > 0 && args[0].equals("no-gui")) {
-            tabelaSimbolos = new ArrayList<>();
-            instrucoes = new ArrayList<>();
-
-            // para testes com exercícios
-            preparaTabelaSimbolos();
-
-            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+            usarInterfaceGrafica = false;
+            input = new BufferedReader(new InputStreamReader(System.in));
 
             // ler e traduzir os comandos
-            processarComandos(input);
+            processarComandos();
 
             // adicionar instruçao STOP
             adicionarInstrucao(instrucoes, new Instrucao(OpCode.getOpCode("STOP")));
 
             // gerar codigo
-            gerarCodigo();
+            escreverSaida();
+        } else {
+            usarInterfaceGrafica = true;
+            /* Set the Nimbus look and feel */
+            //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+            /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+             * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+             */
+            try {
+                for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                    if ("Nimbus".equals(info.getName())) {
+                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            } catch (ClassNotFoundException ex) {
+                java.util.logging.Logger.getLogger(JFrameTradutorIAS.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                java.util.logging.Logger.getLogger(JFrameTradutorIAS.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                java.util.logging.Logger.getLogger(JFrameTradutorIAS.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+                java.util.logging.Logger.getLogger(JFrameTradutorIAS.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+            //</editor-fold>
+
+            JFrameTradutorIAS frame = new JFrameTradutorIAS();
+            jTextAreaCodigoFonte = frame.getTextAreaCodigoFonte();
+            frame.setVisible(true);
         }
     }
     
-    private static String processarComandos(BufferedReader input) throws IOException {
+    public static ArrayList<ArrayList<String>> traduzirCodigoFonte() {
+        linhas = jTextAreaCodigoFonte.getText().split("\n");
+        indiceUltimaLinhaLida = 0;
+
+        // ler e traduzir os comandos
+        processarComandos();
+
+        // adicionar instruçao STOP
+        adicionarInstrucao(instrucoes, new Instrucao(OpCode.getOpCode("STOP")));
+
+        // gerar codigo
+        return gerarCodigo();
+    }
+    
+    private static String obterNovaLinha() {
+        if (usarInterfaceGrafica) {
+            if (indiceUltimaLinhaLida < linhas.length) {
+                String linha = linhas[indiceUltimaLinhaLida++];
+                return linha;
+            } else {
+                return null;
+            }
+        } else {
+            try {
+                return input.readLine();
+            } catch (IOException ex) { }
+            return null;
+        }
+    }
+    
+    private static String processarComandos() {
         String linha;
-        while ((linha = input.readLine()) != null && 
+        while ((linha = obterNovaLinha()) != null && 
                 !(linha.trim().length() >= 3 && linha.trim().substring(0, 3).equals("FIM")) &&
                 !linha.trim().equals("SENAO")) {
             linha = linha.trim();
@@ -215,9 +283,9 @@ public class TradutorIAS {
                 continue;
             
             if (tokens[0].equals("SE")) {
-                processarSe(tokens, input);
+                processarSe(tokens);
             } else if (tokens[0].equals("ENQUANTO")) {
-                processarEnquanto(tokens, input);
+                processarEnquanto(tokens);
             } else if (tokens[1].equals("<-")) {
                 processarAtribuicao(tokens);
             }
@@ -606,7 +674,7 @@ public class TradutorIAS {
         return simboloToken;
     }
 
-    private static void processarSe(String[] tokens, BufferedReader input) throws IOException {
+    private static void processarSe(String[] tokens) {
         // processar expressão condicional
         Simbolo resultadoExpressao = processarExpressao(tokens, 1, tokens.length - 1);
 
@@ -626,7 +694,7 @@ public class TradutorIAS {
         haSaltoIndefinido = true;
         saltosIndefinidos.add(rotuloSe);
         // processar comandos SE:
-        String delimitadorSe = processarComandos(input);
+        String delimitadorSe = processarComandos();
         
         // JUMP M(X,...) FIM
         Simbolo rotuloFim = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
@@ -637,7 +705,7 @@ public class TradutorIAS {
         haSaltoIndefinido = true;
         saltosIndefinidos.add(rotuloSenao);
         // processar comandos SENAO
-        processarComandos(input);
+        processarComandos();
         
         // FIM:
         // prepara para ajustar rótulo FIM para a próxima instrução adicionada
@@ -645,11 +713,31 @@ public class TradutorIAS {
         saltosIndefinidos.add(rotuloFim);
     }
 
-    private static void processarEnquanto(String[] tokens, BufferedReader input) {
+    private static void processarEnquanto(String[] tokens) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private static void gerarCodigo() {
+    private static void escreverSaida() {
+        ArrayList<ArrayList<String>> codigos = gerarCodigo();
+        
+        System.out.println("\nCodigo do programa com instruçoes da linguagem modificada:\n");
+        for (String s : codigos.get(0))
+            System.out.println(s);
+        
+        System.out.println("\nCodigo do programa com instruçoes da linguagem original:\n");
+        for (String s : codigos.get(1))
+            System.out.println(s);
+
+        System.out.println("\nCodigo do programa em linguagem de maquina (hexadecimal):\n");
+        for (String s : codigos.get(2))
+            System.out.println(s);
+    }
+    
+    public static ArrayList<ArrayList<String>> gerarCodigo() {
+        ArrayList<String> codigoLinguagemModificada = new ArrayList<>();
+        ArrayList<String> codigoLinguagemOriginal = new ArrayList<>();
+        ArrayList<String> codigoHexadecimal = new ArrayList<>();
+        
         // primeiro, deve decidir pelos jumps para instruçoes do lado esquerdo ou direito
         for (Instrucao instr : instrucoes) {
             if (instr.opcode == OpCode.getOpCode("JUMP M(X,...)") || instr.opcode == OpCode.getOpCode("JUMP+ M(X,...)")) {
@@ -674,9 +762,6 @@ public class TradutorIAS {
         // define endereço da palavra com a instruçao STOP
         int enderecoStop = (instrucoes.size() - 1) / 2; // dividido por 2 porque ha duas instruçoes por palavra
         
-        // depois, deve escrever o codigo textual na saida, nos dois formatos (original e modificado)
-        System.out.println("\nCodigo do programa com instruçoes da linguagem modificada:\n");
-        
         ArrayList<String> codigoInstrucoes = new ArrayList<>();
         ArrayList<Integer> parametrosInstrucoes = new ArrayList<>();
         
@@ -693,39 +778,37 @@ public class TradutorIAS {
                 parametro = posPalavraParametro;
             }
             
-            System.out.println(codigo);
+            codigoLinguagemModificada.add(codigo);
             codigoInstrucoes.add(OpCode.getInstrucaoLinguagemOriginal(instr.opcode));
             parametrosInstrucoes.add(parametro);
         }
         
         // adicionar codigo ".empty", se instruçao STOP for do lado esquerdo
         if (instrucoes.size() % 2 == 1) {
-            System.out.println(".empty");
+            codigoLinguagemModificada.add(".empty");
             codigoInstrucoes.add(".empty");
             parametrosInstrucoes.add(0);
         }
         
         // imprimir dados da tabela de simbolos
         for (Simbolo simb : tabelaSimbolos) {
-            System.out.println((simb.tipo == TipoSimbolo.Constante ? "c" : "") + simb.token + ": " +  ".data " + simb.valor);
+            codigoLinguagemModificada.add((simb.tipo == TipoSimbolo.Constante ? "c" : "") + simb.token + ": " +  ".data " + simb.valor);
         }
-        
-        System.out.println("\nCodigo do programa com instruçoes da linguagem original:\n");
         
         for (int i = 0; i < codigoInstrucoes.size(); i++) {
             if (!codigoInstrucoes.get(i).equals(".empty") && instrucoes.get(i).parametro != null) {
                 String cod = codigoInstrucoes.get(i) + " " + parametrosInstrucoes.get(i);
-                System.out.println(cod);
+                codigoLinguagemOriginal.add(cod);
             } else {
-                System.out.println(codigoInstrucoes.get(i));
+                codigoLinguagemOriginal.add(codigoInstrucoes.get(i));
             }
         }
         // imprimir dados da tabela de simbolos
         for (Simbolo simb : tabelaSimbolos) {
-            System.out.println((simb.tipo == TipoSimbolo.Constante ? "c" : "") + simb.token + ": " +  ".data " + simb.valor);
+            codigoLinguagemOriginal.add((simb.tipo == TipoSimbolo.Constante ? "c" : "") + simb.token + ": " +  ".data " + simb.valor);
         }
         
-        System.out.println("\nCodigo do programa em linguagem de maquina (hexadecimal):\n");
+        String linhaHexadecimal = "";
         for (int i = 0; i < parametrosInstrucoes.size(); i++) {
             String op = "";
             if (codigoInstrucoes.get(i).equals(".empty")) {
@@ -739,10 +822,12 @@ public class TradutorIAS {
             while (par.length() < 3)
                 par = "0" + par;
             if (i % 2 == 1)
-                System.out.print(" ");
-            System.out.print(op + " " + par);
-            if (i % 2 == 1)
-                System.out.println();
+                linhaHexadecimal += " ";
+            linhaHexadecimal += op + " " + par;
+            if (i % 2 == 1) {
+                codigoHexadecimal.add(linhaHexadecimal);
+                linhaHexadecimal = "";
+            }
         }
         for (Simbolo simb : tabelaSimbolos) {
             String palavra = Long.toHexString(simb.valor);
@@ -750,8 +835,14 @@ public class TradutorIAS {
                 palavra = palavra.substring(0, 10);
             while (palavra.length() < 10)
                 palavra = "0" + palavra;
-            System.out.println(palavra);
+            codigoHexadecimal.add(palavra);
         }
+        
+        ArrayList<ArrayList<String>> codigos = new ArrayList<>();
+        codigos.add(codigoLinguagemModificada);
+        codigos.add(codigoLinguagemOriginal);
+        codigos.add(codigoHexadecimal);
+        return codigos;
     }
     
 }
