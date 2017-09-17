@@ -367,15 +367,16 @@ public class JFrameTradutorIAS extends javax.swing.JFrame {
     private void jButtonTraduzirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonTraduzirActionPerformed
         ArrayList<ArrayList<String>> codigos = TradutorIAS.traduzirCodigoFonte();
         
-        jTextAreaCodigoIasModificado.setText("");
+        StringBuilder codigo = new StringBuilder();
         boolean novaLinha = false;
         for (String s : codigos.get(0)) {
             if (novaLinha) {
-                jTextAreaCodigoIasModificado.append("\n");
+                codigo.append("\n");
             }
-            jTextAreaCodigoIasModificado.append(s);
+            codigo.append(s);
             novaLinha = true;
         }
+        jTextAreaCodigoIasModificado.setText(codigo.toString());
         jTextAreaCodigoIasModificado.getCaret().setDot(0);
         
         jTextAreaCodigoIasOriginal.setText("");

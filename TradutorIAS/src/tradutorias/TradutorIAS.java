@@ -153,7 +153,22 @@ class OpCode {
  * alto nível (semelhante à linguagem do VisuAlg, mas simplificada), e escreve 
  * na saída as instruções para programar o IAS para executar os comandos da 
  * entrada. Nesta versão, é obrigatório o uso de um espaço em branco entre cada
- * elemento léxico dos comandos.
+ * elemento léxico dos comandos. Também é obrigatório uso de expressões
+ * completamente parentizadas, exceto para expressões com apenas um símbolo e
+ * sem qualquer operador. Os comandos aceitos são:
+ *  <pre>
+ * variável &lt;- expressão
+ *  
+ * SE expressão-condicional ENTAO
+ *   comandos-se-expressão-verdadeira
+ * SENAO
+ *   comandos-se-expressão-falsa
+ * FIM
+ *  
+ * ENQUANTO expressão-condicional FACA
+ *   comandos
+ * FIM
+ *  </pre>
  * 
  * @author Alexandre Romanelli <alexandre.romanelli@ifes.edu.br>
  */
@@ -242,6 +257,12 @@ public class TradutorIAS {
     }
     
     public static ArrayList<ArrayList<String>> traduzirCodigoFonte() {
+        tabelaSimbolos = new ArrayList<>();
+        instrucoes = new ArrayList<>();
+
+        // para testes com exercícios
+        preparaTabelaSimbolos();
+
         linhas = jTextAreaCodigoFonte.getText().split("\n");
         indiceUltimaLinhaLida = 0;
 
@@ -714,7 +735,36 @@ public class TradutorIAS {
     }
 
     private static void processarEnquanto(String[] tokens) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // marcar ponto de retorno
+        Simbolo rotuloExpressaoCondicional = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
+        // prepara para ajustar rótulo de ponto de retorno para a próxima instrução adicionada
+        haSaltoIndefinido = true;
+        saltosIndefinidos.add(rotuloExpressaoCondicional);
+        
+        // processar expressão condicional
+        Simbolo resultadoExpressao = processarExpressao(tokens, 1, tokens.length - 1);
+        
+        // LOAD M(X) resultadoExpressao
+        Instrucao ins1 = new Instrucao(OpCode.getOpCode("LOAD M(X)"), resultadoExpressao);
+        instrucoes.add(ins1);
+        // JUMP+ M(X,...) BLOCO_COMANDOS
+        Simbolo rotuloBlocoComandos = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
+        Instrucao ins2 = new Instrucao(OpCode.getOpCode("JUMP+ M(X,...)"), rotuloBlocoComandos);
+        instrucoes.add(ins2);
+        // JUMP M(X,...) FIM_ENQUANTO
+        Simbolo rotuloFimEnquanto = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
+        Instrucao ins3 = new Instrucao(OpCode.getOpCode("JUMP M(X,...)"), rotuloFimEnquanto);
+        instrucoes.add(ins3);
+        // <comandos>
+        haSaltoIndefinido = true;
+        saltosIndefinidos.add(rotuloBlocoComandos);
+        processarComandos();
+        // JUMP M(X,...) EXPRESSAO_CONDICIONAL
+        Instrucao ins4 = new Instrucao(OpCode.getOpCode("JUMP M(X,...)"), rotuloExpressaoCondicional);
+        instrucoes.add(ins4);
+        // FIM_ENQUANTO: ...
+        haSaltoIndefinido = true;
+        saltosIndefinidos.add(rotuloFimEnquanto);
     }
 
     private static void escreverSaida() {

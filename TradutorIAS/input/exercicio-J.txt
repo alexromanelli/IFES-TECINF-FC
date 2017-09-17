@@ -1,0 +1,7 @@
+A <- 14
+B <- 1
+C <- 1
+ENQUANTO ( B < A ) FACA
+  B <- ( B + 1 )
+  C <- ( C * B )
+FIM
