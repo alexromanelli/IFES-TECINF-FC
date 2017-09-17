@@ -578,7 +578,7 @@ public class TradutorIAS {
                         //    JUMP+ M(X,...) V
                         //    JUMP M(X,...) F
                         // V: LOAD M(X) operando2
-                        // F:
+                        // F: STOR M(X) temporariaN
                         ins1 = new Instrucao(OpCode.getOpCode("LOAD M(X)"), operando1);
                         Simbolo rotuloV = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
                         ins2 = new Instrucao(OpCode.getOpCode("JUMP+ M(X,...)"), rotuloV);
@@ -586,32 +586,32 @@ public class TradutorIAS {
                         ins3 = new Instrucao(OpCode.getOpCode("JUMP M(X,...)"), rotuloF);
                         ins4 = new Instrucao(OpCode.getOpCode("LOAD M(X)"), operando2);
                         rotuloV.destinoSalto = ins4;
+                        ins5 = new Instrucao(OpCode.getOpCode("STOR M(X)"), temporaria);
+                        rotuloF.destinoSalto = ins5;
                         adicionarInstrucao(instrucoes, ins1);
                         adicionarInstrucao(instrucoes, ins2);
                         adicionarInstrucao(instrucoes, ins3);
                         adicionarInstrucao(instrucoes, ins4);
-                        // deixar rotuloF como indefinido e pendente para a próxima instrução adicionada
-                        haSaltoIndefinido = true;
-                        saltosIndefinidos.add(rotuloF);
+                        adicionarInstrucao(instrucoes, ins5);
                         break;
                         
                     case DisjuncaoLogica:
                         //    LOAD M(X) operando1
                         //    JUMP+ M(X,...) V
                         // V: LOAD M(X) operando2
-                        // F:
+                        // F: STOR M(X) temporariaN
                         ins1 = new Instrucao(OpCode.getOpCode("LOAD M(X)"), operando1);
                         rotuloV = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
                         ins2 = new Instrucao(OpCode.getOpCode("JUMP+ M(X,...)"), rotuloV);
                         rotuloF = new Simbolo(("R#" + (contagemRotulosSaltos++)), TipoSimbolo.RotuloParaSalto, null);
                         ins3 = new Instrucao(OpCode.getOpCode("LOAD M(X)"), operando2);
                         rotuloV.destinoSalto = ins3;
+                        ins4 = new Instrucao(OpCode.getOpCode("STOR M(X)"), temporaria);
+                        rotuloF.destinoSalto = ins4;
                         adicionarInstrucao(instrucoes, ins1);
                         adicionarInstrucao(instrucoes, ins2);
                         adicionarInstrucao(instrucoes, ins3);
-                        // deixar rotuloF como indefinido e pendente para a próxima instrução adicionada
-                        haSaltoIndefinido = true;
-                        saltosIndefinidos.add(rotuloF);
+                        adicionarInstrucao(instrucoes, ins4);
                         break;
                         
                     case NegacaoLogica:
@@ -619,6 +619,7 @@ public class TradutorIAS {
                         // ADD M(X) C1
                         // STOR M(X) T1
                         // LOAD -M(X) T1
+                        // STOR M(X) temporaria
                         operando3 = procurarItemTabelaSimbolos("1");
                         if (operando3 == null) {
                             operando3 = new Simbolo("1", TipoSimbolo.Constante, 1);
@@ -628,10 +629,12 @@ public class TradutorIAS {
                         ins2 = new Instrucao(OpCode.getOpCode("ADD M(X)"), operando3);
                         ins3 = new Instrucao(OpCode.getOpCode("STOR M(X)"), temporaria);
                         ins4 = new Instrucao(OpCode.getOpCode("LOAD -M(X)"), temporaria);
+                        ins5 = new Instrucao(OpCode.getOpCode("STOR M(X)"), temporaria);
                         adicionarInstrucao(instrucoes, ins1);
                         adicionarInstrucao(instrucoes, ins2);
                         adicionarInstrucao(instrucoes, ins3);
                         adicionarInstrucao(instrucoes, ins4);
+                        adicionarInstrucao(instrucoes, ins5);
                         break;
                 }
                 
