@@ -1,8 +1,0 @@
-a <- 147
-b <- 105
-ENQUANTO ( NAO ( b = 0 ) ) FACA
-  r <- ( a % b )
-  a <- b
-  b <- r
-FIM
-mdc <- a
